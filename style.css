@@ -1,6 +1,6 @@
 :root {
     --primary-admin: #2563eb;
-    --primary-user: #059669; /* لون مختلف لتمييز واجهة السائق */
+    --primary-user: #059669; 
     --bg-color: #f3f4f6;
     --card-bg: #ffffff;
     --text-color: #1f2937;
@@ -11,9 +11,8 @@
 
 body { background-color: var(--bg-color); color: var(--text-color); }
 
-/* التحكم بالشاشات */
-.app-screen, .active-screen { display: none; }
-.active-screen { display: block; }
+/* كلاس مهم جداً لإخفاء العناصر برمجياً */
+.hidden { display: none !important; }
 
 /* شاشة تسجيل الدخول */
 #login-screen {
