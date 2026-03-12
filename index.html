@@ -9,24 +9,24 @@
 </head>
 <body>
 
-    <div id="login-screen" class="active-screen">
+    <div id="login-screen" class="screen-container">
         <div class="login-container">
             <i class="fas fa-bus-alt login-logo"></i>
             <h2>مرحباً بك في نظام النقل</h2>
             <p>الرجاء تحديد صفتك للدخول</p>
-            <button class="btn btn-primary" onclick="login('admin')">
+            <button id="btn-login-admin" class="btn btn-primary">
                 <i class="fas fa-user-tie"></i> دخول كـ مدير / محاسب
             </button>
-            <button class="btn btn-secondary" onclick="login('user')">
+            <button id="btn-login-user" class="btn btn-secondary">
                 <i class="fas fa-steering-wheel"></i> دخول كـ سائق / مندوب
             </button>
         </div>
     </div>
 
-    <div id="admin-app" class="app-screen">
+    <div id="admin-app" class="screen-container hidden">
         <header class="top-header">
             <h1>واجهة الإدارة</h1>
-            <div class="user-info" onclick="logout()">
+            <div class="user-info btn-logout">
                 <i class="fas fa-sign-out-alt"></i> خروج
             </div>
         </header>
@@ -97,10 +97,9 @@
 
             <section id="admin-funds" class="tab-content">
                 <h2>الصناديق المالية (النقل العام)</h2>
-                <div class="stats-grid" id="buses-funds-grid">
-                    </div>
+                <div class="stats-grid" id="buses-funds-grid"></div>
                 <h2 style="margin-top: 20px;">الأرباح</h2>
-                <p>شاشة حساب صافي أرباح الرحلات (سيتم برمجتها لاحقاً)</p>
+                <p>شاشة حساب صافي أرباح الرحلات</p>
             </section>
 
             <section id="admin-reports" class="tab-content">
@@ -127,10 +126,10 @@
         </nav>
     </div>
 
-    <div id="user-app" class="app-screen">
+    <div id="user-app" class="screen-container hidden">
         <header class="top-header" style="background-color: #059669;">
             <h1>واجهة السائق والمندوب</h1>
-            <div class="user-info" onclick="logout()">
+            <div class="user-info btn-logout">
                 <i class="fas fa-sign-out-alt"></i> خروج
             </div>
         </header>
