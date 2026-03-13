@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupNavigation();
     populateSelects();
     generateBusFunds();
+    setupCalculationsAndInteractions();
 });
 
 // 1. نظام تسجيل الدخول والخروج
@@ -20,19 +21,16 @@ function setupLoginSystem() {
     const adminApp = document.getElementById("admin-app");
     const userApp = document.getElementById("user-app");
 
-    // زر دخول المدير
     document.getElementById("btn-login-admin").addEventListener("click", () => {
         loginScreen.classList.add("hidden");
         adminApp.classList.remove("hidden");
     });
 
-    // زر دخول السائق/المندوب
     document.getElementById("btn-login-user").addEventListener("click", () => {
         loginScreen.classList.add("hidden");
         userApp.classList.remove("hidden");
     });
 
-    // أزرار الخروج
     const logoutButtons = document.querySelectorAll(".btn-logout");
     logoutButtons.forEach(btn => {
         btn.addEventListener("click", () => {
@@ -66,29 +64,20 @@ function setupNavigation() {
     });
 }
 
-// 3. تعبئة القوائم المنسدلة (Select) بالبيانات من المصفوفات
+// 3. تعبئة القوائم المنسدلة
 function populateSelects() {
     const driverSelect = document.getElementById("driver-select");
     const mandoubSelect = document.getElementById("mandoub-select");
     const busSelect = document.getElementById("bus-select");
 
-    // تحقق من وجود العناصر قبل تعبئتها لتجنب الأخطاء
     if(driverSelect && mandoubSelect && busSelect) {
-        appData.drivers.forEach(name => {
-            driverSelect.innerHTML += `<option value="${name}">${name}</option>`;
-        });
-
-        appData.mandoubs.forEach(name => {
-            mandoubSelect.innerHTML += `<option value="${name}">${name}</option>`;
-        });
-
-        appData.buses.forEach(name => {
-            busSelect.innerHTML += `<option value="${name}">${name}</option>`;
-        });
+        appData.drivers.forEach(name => driverSelect.innerHTML += `<option value="${name}">${name}</option>`);
+        appData.mandoubs.forEach(name => mandoubSelect.innerHTML += `<option value="${name}">${name}</option>`);
+        appData.buses.forEach(name => busSelect.innerHTML += `<option value="${name}">${name}</option>`);
     }
 }
 
-// 4. توليد صناديق الباصات الـ 7 في واجهة المدير
+// 4. توليد صناديق الباصات بالتصميم الجديد (وارد - صادر - تحويل)
 function generateBusFunds() {
     const grid = document.getElementById("buses-funds-grid");
     if(grid) {
@@ -97,9 +86,55 @@ function generateBusFunds() {
                 <div class="stat-card">
                     <i class="fas fa-bus" style="color: var(--primary-admin); font-size: 1.5rem;"></i>
                     <h4 style="font-size: 0.9rem; margin: 5px 0;">${bus}</h4>
-                    <p style="font-weight: bold;">0 $</p>
+                    <div class="fund-details">
+                        <span>و: 0</span> | <span>ص: 0</span> | <span>ت: 0</span>
+                    </div>
                 </div>
             `;
+        });
+    }
+}
+
+// 5. العمليات الحسابية التلقائية وإظهار/إخفاء الحقول
+function setupCalculationsAndInteractions() {
+    // حساب المتبقي للسائق
+    const driverTotal = document.getElementById("driver-total");
+    const driverPaid = document.getElementById("driver-paid");
+    const driverRem = document.getElementById("driver-rem");
+    
+    const calcDriver = () => {
+        if(driverTotal && driverPaid && driverRem) {
+            driverRem.value = (Number(driverTotal.value) - Number(driverPaid.value)) || 0;
+        }
+    };
+    if(driverTotal) driverTotal.addEventListener("input", calcDriver);
+    if(driverPaid) driverPaid.addEventListener("input", calcDriver);
+
+    // حساب المتبقي للمندوب
+    const manTotal = document.getElementById("man-total");
+    const manPaid = document.getElementById("man-paid");
+    const manRem = document.getElementById("man-rem");
+
+    const calcMan = () => {
+        if(manTotal && manPaid && manRem) {
+            manRem.value = (Number(manTotal.value) - Number(manPaid.value)) || 0;
+        }
+    };
+    if(manTotal) manTotal.addEventListener("input", calcMan);
+    if(manPaid) manPaid.addEventListener("input", calcMan);
+
+    // إظهار حقل "عدد المعتمرين" في المصاريف عند اختيار تذكرة هيئة أو مطعم
+    const expenseType = document.getElementById("expense-type");
+    const pilgrimsCountGroup = document.getElementById("pilgrims-count-group");
+
+    if(expenseType && pilgrimsCountGroup) {
+        expenseType.addEventListener("change", (e) => {
+            const val = e.target.value;
+            if(val === "haya" || val === "restaurant") {
+                pilgrimsCountGroup.classList.remove("hidden");
+            } else {
+                pilgrimsCountGroup.classList.add("hidden");
+            }
         });
     }
 }
