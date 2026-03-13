@@ -3,8 +3,20 @@ const appData = {
     drivers: ["عمار علوان", "سالم", "ياسر عقيل", "عبدالله", "ياسر ناطق", "مصطفى", "حمودي", "عمر عقوبه", "عمر كداد", "علي محيي"],
     mandoubs: ["ابو الطيب", "عباس فاضل", "عبدالله", "ليث", "علي محسن"],
     buses: ["هيكر ازرق", "هيكر اصفر", "سكانيا رصاصي", "جي ابيض", "ترافيكو حار سيدي", "GT طيارة", "GT وردي"],
-    accountants: ["علي ثامر", "مهند", "رحمة", "مدقق حسابات"]
+    accountants: ["علي ثامر", "مهند", "رحمة", "مدقق حسابات"],
+    expenseTypes: ["وقود", "حدود", "زيوت", "إطارات", "صيانة", "مصاريف مندوب"],
+    busExpenseOptions: ["خيار 1", "خيار 2"],
+    users: [
+        {name: "عمار علوان", pass: "123"}
+    ],
+    savedTripsInfo: [],
+    busFunds: {}
 };
+
+// تهيئة صناديق الباصات
+appData.buses.forEach(bus => {
+    appData.busFunds[bus] = { in: 0, out: 0, trans: 0 };
+});
 
 // تشغيل الأكواد بمجرد تحميل الصفحة
 document.addEventListener("DOMContentLoaded", () => {
@@ -13,6 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
     populateSelects();
     generateBusFunds();
     setupCalculationsAndInteractions();
+    setupSettingsSystem();
+    setupTripInfoSystem();
+    setupSaveButtons();
 });
 
 // 1. نظام تسجيل الدخول والخروج
@@ -20,15 +35,37 @@ function setupLoginSystem() {
     const loginScreen = document.getElementById("login-screen");
     const adminApp = document.getElementById("admin-app");
     const userApp = document.getElementById("user-app");
+    
+    // تحديث قائمة يوزرات الدخول
+    const userSelect = document.getElementById("user-name-select");
+    userSelect.innerHTML = '<option value="">اختر اسمك</option>';
+    appData.users.forEach(u => userSelect.innerHTML += `<option value="${u.name}">${u.name}</option>`);
 
     document.getElementById("btn-login-admin").addEventListener("click", () => {
-        loginScreen.classList.add("hidden");
-        adminApp.classList.remove("hidden");
+        const pass = document.getElementById("admin-pass-input").value;
+        if(pass === "1001") {
+            loginScreen.classList.add("hidden");
+            adminApp.classList.remove("hidden");
+            document.getElementById("admin-pass-input").value = "";
+        } else {
+            alert("كلمة المرور غير صحيحة");
+        }
     });
 
     document.getElementById("btn-login-user").addEventListener("click", () => {
-        loginScreen.classList.add("hidden");
-        userApp.classList.remove("hidden");
+        const name = document.getElementById("user-name-select").value;
+        const pass = document.getElementById("user-pass-input").value;
+        
+        const user = appData.users.find(u => u.name === name && u.pass === pass);
+        
+        if(user) {
+            document.getElementById("logged-in-user-name").textContent = user.name;
+            loginScreen.classList.add("hidden");
+            userApp.classList.remove("hidden");
+            document.getElementById("user-pass-input").value = "";
+        } else {
+            alert("اسم المستخدم أو كلمة المرور غير صحيحة");
+        }
     });
 
     const logoutButtons = document.querySelectorAll(".btn-logout");
@@ -37,6 +74,10 @@ function setupLoginSystem() {
             adminApp.classList.add("hidden");
             userApp.classList.add("hidden");
             loginScreen.classList.remove("hidden");
+            
+            // تحديث القائمة عند الخروج لتشمل أي يوزر جديد
+            userSelect.innerHTML = '<option value="">اختر اسمك</option>';
+            appData.users.forEach(u => userSelect.innerHTML += `<option value="${u.name}">${u.name}</option>`);
         });
     });
 }
@@ -66,28 +107,50 @@ function setupNavigation() {
 
 // 3. تعبئة القوائم المنسدلة
 function populateSelects() {
-    const driverSelect = document.getElementById("driver-select");
-    const mandoubSelect = document.getElementById("mandoub-select");
-    const busSelect = document.getElementById("bus-select");
+    const elements = {
+        driverSelect: document.getElementById("driver-select"),
+        mandoubSelect: document.getElementById("mandoub-select"),
+        busSelect: document.getElementById("bus-select"),
+        financeBusType: document.getElementById("finance-bus-type"),
+        userExpType: document.getElementById("user-expense-type-select"),
+        userCarType: document.getElementById("user-car-type-select"),
+        userBusDriver: document.getElementById("user-bus-driver-select"),
+        userBusCar: document.getElementById("user-bus-car-select"),
+        userBusOpts: document.getElementById("user-bus-opts-select")
+    };
 
-    if(driverSelect && mandoubSelect && busSelect) {
-        appData.drivers.forEach(name => driverSelect.innerHTML += `<option value="${name}">${name}</option>`);
-        appData.mandoubs.forEach(name => mandoubSelect.innerHTML += `<option value="${name}">${name}</option>`);
-        appData.buses.forEach(name => busSelect.innerHTML += `<option value="${name}">${name}</option>`);
-    }
+    if(elements.driverSelect) elements.driverSelect.innerHTML = appData.drivers.map(n => `<option>${n}</option>`).join('');
+    if(elements.mandoubSelect) elements.mandoubSelect.innerHTML = appData.mandoubs.map(n => `<option>${n}</option>`).join('');
+    if(elements.busSelect) elements.busSelect.innerHTML = appData.buses.map(n => `<option>${n}</option>`).join('');
+    if(elements.financeBusType) elements.financeBusType.innerHTML = appData.buses.map(n => `<option value="${n}">${n}</option>`).join('');
+    if(elements.userCarType) elements.userCarType.innerHTML = appData.buses.map(n => `<option>${n}</option>`).join('');
+    if(elements.userBusDriver) elements.userBusDriver.innerHTML = appData.drivers.map(n => `<option>${n}</option>`).join('');
+    if(elements.userBusCar) elements.userBusCar.innerHTML = appData.buses.map(n => `<option>${n}</option>`).join('');
+
+    renderDynamicSelects();
 }
 
-// 4. توليد صناديق الباصات بالتصميم الجديد (وارد - صادر - تحويل)
+function renderDynamicSelects() {
+    const userExpType = document.getElementById("user-expense-type-select");
+    const userBusOpts = document.getElementById("user-bus-opts-select");
+    
+    if(userExpType) userExpType.innerHTML = appData.expenseTypes.map(n => `<option>${n}</option>`).join('');
+    if(userBusOpts) userBusOpts.innerHTML = '<option value="">بدون خيار</option>' + appData.busExpenseOptions.map(n => `<option>${n}</option>`).join('');
+}
+
+// 4. توليد صناديق الباصات بالتصميم الجديد
 function generateBusFunds() {
     const grid = document.getElementById("buses-funds-grid");
     if(grid) {
+        grid.innerHTML = "";
         appData.buses.forEach(bus => {
+            let fund = appData.busFunds[bus] || {in:0, out:0, trans:0};
             grid.innerHTML += `
                 <div class="stat-card">
                     <i class="fas fa-bus" style="color: var(--primary-admin); font-size: 1.5rem;"></i>
                     <h4 style="font-size: 0.9rem; margin: 5px 0;">${bus}</h4>
                     <div class="fund-details">
-                        <span>و: 0</span> | <span>ص: 0</span> | <span>ت: 0</span>
+                        <span>و: ${fund.in}</span> | <span>ص: ${fund.out}</span> | <span>ت: ${fund.trans}</span>
                     </div>
                 </div>
             `;
@@ -119,7 +182,6 @@ function setupCalculationsAndInteractions() {
         }
     };
 
-    // حساب المتبقي للسائق
     const calcDriver = () => {
         if(driverTotal && driverPaid && driverRem) {
             driverRem.value = (Number(driverTotal.value) - Number(driverPaid.value)) || 0;
@@ -129,7 +191,6 @@ function setupCalculationsAndInteractions() {
     if(driverTotal) driverTotal.addEventListener("input", calcDriver);
     if(driverPaid) driverPaid.addEventListener("input", calcDriver);
 
-    // حساب المتبقي للمندوب
     const calcMan = () => {
         if(manTotal && manPaid && manRem) {
             manRem.value = (Number(manTotal.value) - Number(manPaid.value)) || 0;
@@ -138,31 +199,117 @@ function setupCalculationsAndInteractions() {
     };
     if(manTotal) manTotal.addEventListener("input", calcMan);
     if(manPaid) manPaid.addEventListener("input", calcMan);
+}
 
-    // إظهار حقل "عدد المعتمرين" و "عدد اللترات" في المصاريف
-    const expenseType = document.getElementById("expense-type");
-    const pilgrimsCountGroup = document.getElementById("pilgrims-count-group");
-    const litersCountGroup = document.getElementById("liters-count-group");
+// 6. نظام الإعدادات (أنواع المصاريف، خيارات الباص، اليوزرات)
+function setupSettingsSystem() {
+    const renderLists = () => {
+        const expList = document.getElementById("exp-types-list");
+        const busOptsList = document.getElementById("bus-opts-list");
+        
+        if(expList) {
+            expList.innerHTML = appData.expenseTypes.map((t, i) => `
+                <li style="justify-content: space-between;">${t}
+                    <div>
+                        <button onclick="editExp(${i})" class="btn-primary" style="padding:2px 8px; font-size:12px; border:none; border-radius:4px; color:white; cursor:pointer;">تعديل</button>
+                        <button onclick="delExp(${i})" style="background:red; padding:2px 8px; font-size:12px; border:none; border-radius:4px; color:white; cursor:pointer;">حذف</button>
+                    </div>
+                </li>`).join('');
+        }
+        
+        if(busOptsList) {
+            busOptsList.innerHTML = appData.busExpenseOptions.map((t, i) => `
+                <li style="justify-content: space-between;">${t}
+                    <div>
+                        <button onclick="editBusOpt(${i})" class="btn-primary" style="padding:2px 8px; font-size:12px; border:none; border-radius:4px; color:white; cursor:pointer;">تعديل</button>
+                        <button onclick="delBusOpt(${i})" style="background:red; padding:2px 8px; font-size:12px; border:none; border-radius:4px; color:white; cursor:pointer;">حذف</button>
+                    </div>
+                </li>`).join('');
+        }
+        renderDynamicSelects();
+    };
 
-    if(expenseType) {
-        expenseType.addEventListener("change", (e) => {
-            const val = e.target.value;
-            
-            if(pilgrimsCountGroup) {
-                if(val === "haya" || val === "restaurant") {
-                    pilgrimsCountGroup.classList.remove("hidden");
-                } else {
-                    pilgrimsCountGroup.classList.add("hidden");
-                }
-            }
+    document.getElementById("btn-add-exp-type").addEventListener("click", () => {
+        const val = document.getElementById("new-exp-type-input").value;
+        if(val) { appData.expenseTypes.push(val); document.getElementById("new-exp-type-input").value = ""; renderLists(); }
+    });
 
-            if(litersCountGroup) {
-                if(val === "fuel1" || val === "fuel2") {
-                    litersCountGroup.classList.remove("hidden");
-                } else {
-                    litersCountGroup.classList.add("hidden");
-                }
-            }
-        });
-    }
+    document.getElementById("btn-add-bus-opt").addEventListener("click", () => {
+        const val = document.getElementById("new-bus-opt-input").value;
+        if(val) { appData.busExpenseOptions.push(val); document.getElementById("new-bus-opt-input").value = ""; renderLists(); }
+    });
+
+    document.getElementById("btn-save-new-user").addEventListener("click", () => {
+        const name = document.getElementById("new-user-name").value;
+        const pass = document.getElementById("new-user-pass").value;
+        if(name && pass) {
+            appData.users.push({name, pass});
+            document.getElementById("new-user-name").value = "";
+            document.getElementById("new-user-pass").value = "";
+            alert("تم حفظ المستخدم بنجاح");
+        }
+    });
+
+    window.delExp = (i) => { appData.expenseTypes.splice(i, 1); renderLists(); };
+    window.editExp = (i) => { const n = prompt("تعديل", appData.expenseTypes[i]); if(n) { appData.expenseTypes[i] = n; renderLists(); } };
+    window.delBusOpt = (i) => { appData.busExpenseOptions.splice(i, 1); renderLists(); };
+    window.editBusOpt = (i) => { const n = prompt("تعديل", appData.busExpenseOptions[i]); if(n) { appData.busExpenseOptions[i] = n; renderLists(); } };
+
+    renderLists();
+}
+
+// 7. نظام معلومات الرحلة الشاملة
+function setupTripInfoSystem() {
+    const list = document.getElementById("saved-trip-infos-list");
+    
+    window.renderTripInfos = () => {
+        list.innerHTML = appData.savedTripsInfo.map((info, i) => `
+            <li style="justify-content: space-between; flex-wrap: wrap;">
+                <span>معاملة ${i+1} | المورد: ${info.val15 || '-'} | الانطلاقة: ${info.val16 || '-'}</span>
+                <div>
+                    <button onclick="deleteTripInfo(${i})" style="background:red; padding:5px 10px; color:white; border:none; border-radius:4px; cursor:pointer; margin-right:5px;">حذف</button>
+                </div>
+            </li>
+        `).join('');
+    };
+
+    document.getElementById("btn-save-trip-info").addEventListener("click", () => {
+        const info = {
+            val15: document.getElementById("ti-15").value,
+            val16: document.getElementById("ti-16").value
+        };
+        appData.savedTripsInfo.push(info);
+        document.getElementById("trip-info-form").reset();
+        renderTripInfos();
+        alert("تم حفظ المعلومات بنجاح");
+    });
+
+    window.deleteTripInfo = (i) => {
+        appData.savedTripsInfo.splice(i, 1);
+        renderTripInfos();
+    };
+}
+
+// 8. أزرار الحفظ العامة وإضافة رصيد الباص
+function setupSaveButtons() {
+    document.getElementById("btn-save-trip").addEventListener("click", () => alert("تم حفظ الرحلة بنجاح"));
+    document.getElementById("btn-save-user-expense").addEventListener("click", () => alert("تم تسجيل المصروف بنجاح"));
+    document.getElementById("btn-save-user-income").addEventListener("click", () => alert("تم تسجيل الإيراد بنجاح"));
+    document.getElementById("btn-save-user-bus-exp").addEventListener("click", () => alert("تم حفظ مصاريف الباص بنجاح"));
+
+    document.getElementById("btn-save-finance").addEventListener("click", () => {
+        // إضافة رصيد للباص
+        const busType = document.getElementById("finance-bus-type").value;
+        const busFare = Number(document.getElementById("finance-bus-fare").value) || 0;
+        if(busType && busFare > 0) {
+            appData.busFunds[busType].in += busFare;
+            generateBusFunds(); // تحديث الواجهة
+        }
+
+        // نقل سبب تقييم المندوب للمندوب
+        const reason = document.getElementById("mandoub-eval-reason").value;
+        document.getElementById("display-eval-reason").textContent = reason || "لا يوجد";
+
+        alert("تم حفظ المالية بنجاح");
+    });
 }
