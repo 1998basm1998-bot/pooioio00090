@@ -82,6 +82,62 @@
                 <form class="data-form">
                     <div class="form-row">
                         <div class="form-group">
+                            <label>سعر شراء البرنامج الكلي</label>
+                            <input type="number">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>السعر الكلي لغرف مكه</label>
+                            <input type="number">
+                        </div>
+                        <div class="form-group">
+                            <label>السعر الكلي لغرف المدينة</label>
+                            <input type="number">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>سعر العدد الكلي للتأشيرات</label>
+                            <input type="number">
+                        </div>
+                        <div class="form-group">
+                            <label>سعر التأشيرة الواحدة</label>
+                            <input type="number">
+                        </div>
+                        <div class="form-group">
+                            <label>مبلغ الهيئة الكلي</label>
+                            <input type="number">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>تسديد المبلغ في بغداد (العدد)</label>
+                            <input type="number">
+                        </div>
+                        <div class="form-group">
+                            <label>تسديد المبلغ في بغداد (المبلغ)</label>
+                            <input type="number">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>تسديد في الحدود (الاطفال)</label>
+                            <input type="number">
+                        </div>
+                        <div class="form-group">
+                            <label>تسديد في الحدود (المبلغ)</label>
+                            <input type="number">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>سعر الهدايا</label>
+                            <input type="number">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
                             <label>عدد المعتمرين الكلي</label>
                             <input type="number">
                         </div>
@@ -178,6 +234,10 @@
                     
                     <h3 class="section-title">بيانات السائق</h3>
                     <div class="form-row">
+                        <div class="form-group"><label>مبلغ الدين السابق للسائق</label><input type="number"></div>
+                        <div class="form-group"><label>سلفة اضافية عاجله للسائق</label><input type="number"></div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group"><label>سلفة السائق</label><input type="number"></div>
                         <div class="form-group"><label>الأجرة الكلية</label><input type="number" id="driver-total"></div>
                     </div>
@@ -191,6 +251,9 @@
                     </div>
 
                     <h3 class="section-title">بيانات المندوب</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>سلفة اضافية عاجله للمندوب</label><input type="number"></div>
+                    </div>
                     <div class="form-row">
                         <div class="form-group"><label>سلفة المندوب</label><input type="number"></div>
                         <div class="form-group"><label>الأجرة الكلية</label><input type="number" id="man-total"></div>
@@ -218,6 +281,13 @@
 
                 <h3 class="section-title">صناديق أخرى</h3>
                 <div class="stats-grid">
+                    <div class="stat-card special-fund">
+                        <i class="fas fa-bus-alt"></i>
+                        <h4>صندوق النقل العام</h4>
+                        <div class="fund-details">
+                            <span>وارد: 0</span> | <span>صادر: 0</span> | <span>تحويل: 0</span>
+                        </div>
+                    </div>
                     <div class="stat-card special-fund">
                         <i class="fas fa-kaaba"></i>
                         <h4>صندوق العمرة</h4>
@@ -291,8 +361,14 @@
                 <div class="info-card">
                     <h3>رحلة عمرة رجب</h3>
                     <p><strong>التاريخ:</strong> 2024-05-20 | <strong>عدد الأيام:</strong> 10</p>
+                    <p><strong>حالة الرحلة:</strong> <span id="trip-status" style="font-weight: bold; color: red;">معلقة</span></p>
                     <hr>
+                    <p><strong>نقاط إيجابية:</strong> 0 | <strong>نقاط سلبية:</strong> 0</p>
+                    <p><strong>التقييم:</strong> لم يتم التقييم</p>
+                    <hr>
+                    <p><strong>مبلغ الدين السابق:</strong> 0 دولار</p>
                     <p><strong>مبلغ السلفة:</strong> 500 دولار</p>
+                    <p><strong>سلفة اضافية عاجلة:</strong> 0 دولار</p>
                     <p><strong>الأجرة الكلية:</strong> 300 دولار</p>
                     <p><strong>الواصل:</strong> 100 دولار | <strong>المتبقي:</strong> 200 دولار</p>
                 </div>
@@ -315,19 +391,19 @@
                         <label>نوع المصروف</label>
                         <select id="expense-type">
                             <optgroup label="مصاريف الذهاب">
-                                <option>وقود داخل الأراضي العراقية</option>
-                                <option>مصاريف حدود (ذهاب ركبية)</option>
-                                <option>وقود داخل الأراضي السعودية</option>
+                                <option value="fuel1">وقود داخل الأراضي العراقية</option>
+                                <option value="borders1">مصاريف حدود (ذهاب ركبية)</option>
+                                <option value="fuel2">وقود داخل الأراضي السعودية</option>
                             </optgroup>
                             <optgroup label="مصاريف العودة">
-                                <option>مصاريف حدود (عودة ركبية)</option>
-                                <option>مصاريف أخرى عودة</option>
+                                <option value="borders2">مصاريف حدود (عودة ركبية)</option>
+                                <option value="other">مصاريف أخرى عودة</option>
                             </optgroup>
                             <optgroup label="صيانة الباصات">
-                                <option>زيوت</option>
-                                <option>إطارات</option>
-                                <option>كهربائي</option>
-                                <option>فيتر ميكانيك</option>
+                                <option value="oil">زيوت</option>
+                                <option value="tires">إطارات</option>
+                                <option value="electric">كهربائي</option>
+                                <option value="mechanic">فيتر ميكانيك</option>
                             </optgroup>
                             <optgroup label="مصاريف المندوب الخاصة">
                                 <option value="haya">تذكرة هيئة</option>
@@ -340,6 +416,11 @@
                     <div class="form-group hidden" id="pilgrims-count-group">
                         <label>عدد المعتمرين</label>
                         <input type="number" placeholder="أدخل عدد المعتمرين">
+                    </div>
+
+                    <div class="form-group hidden" id="liters-count-group">
+                        <label>عدد اللترات</label>
+                        <input type="number" placeholder="أدخل عدد اللترات">
                     </div>
 
                     <div class="form-group">
