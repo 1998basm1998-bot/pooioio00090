@@ -95,45 +95,73 @@ function generateBusFunds() {
     }
 }
 
-// 5. العمليات الحسابية التلقائية وإظهار/إخفاء الحقول
+// 5. العمليات الحسابية التلقائية وإظهار/إخفاء الحقول وتحديث حالة الرحلة
 function setupCalculationsAndInteractions() {
-    // حساب المتبقي للسائق
     const driverTotal = document.getElementById("driver-total");
     const driverPaid = document.getElementById("driver-paid");
     const driverRem = document.getElementById("driver-rem");
     
+    const manTotal = document.getElementById("man-total");
+    const manPaid = document.getElementById("man-paid");
+    const manRem = document.getElementById("man-rem");
+
+    const tripStatus = document.getElementById("trip-status");
+
+    const updateTripStatus = () => {
+        if (driverRem && manRem && tripStatus) {
+            if (Number(driverRem.value) === 0 && Number(manRem.value) === 0) {
+                tripStatus.textContent = "مكتملة";
+                tripStatus.style.color = "green";
+            } else {
+                tripStatus.textContent = "معلقة";
+                tripStatus.style.color = "red";
+            }
+        }
+    };
+
+    // حساب المتبقي للسائق
     const calcDriver = () => {
         if(driverTotal && driverPaid && driverRem) {
             driverRem.value = (Number(driverTotal.value) - Number(driverPaid.value)) || 0;
+            updateTripStatus();
         }
     };
     if(driverTotal) driverTotal.addEventListener("input", calcDriver);
     if(driverPaid) driverPaid.addEventListener("input", calcDriver);
 
     // حساب المتبقي للمندوب
-    const manTotal = document.getElementById("man-total");
-    const manPaid = document.getElementById("man-paid");
-    const manRem = document.getElementById("man-rem");
-
     const calcMan = () => {
         if(manTotal && manPaid && manRem) {
             manRem.value = (Number(manTotal.value) - Number(manPaid.value)) || 0;
+            updateTripStatus();
         }
     };
     if(manTotal) manTotal.addEventListener("input", calcMan);
     if(manPaid) manPaid.addEventListener("input", calcMan);
 
-    // إظهار حقل "عدد المعتمرين" في المصاريف عند اختيار تذكرة هيئة أو مطعم
+    // إظهار حقل "عدد المعتمرين" و "عدد اللترات" في المصاريف
     const expenseType = document.getElementById("expense-type");
     const pilgrimsCountGroup = document.getElementById("pilgrims-count-group");
+    const litersCountGroup = document.getElementById("liters-count-group");
 
-    if(expenseType && pilgrimsCountGroup) {
+    if(expenseType) {
         expenseType.addEventListener("change", (e) => {
             const val = e.target.value;
-            if(val === "haya" || val === "restaurant") {
-                pilgrimsCountGroup.classList.remove("hidden");
-            } else {
-                pilgrimsCountGroup.classList.add("hidden");
+            
+            if(pilgrimsCountGroup) {
+                if(val === "haya" || val === "restaurant") {
+                    pilgrimsCountGroup.classList.remove("hidden");
+                } else {
+                    pilgrimsCountGroup.classList.add("hidden");
+                }
+            }
+
+            if(litersCountGroup) {
+                if(val === "fuel1" || val === "fuel2") {
+                    litersCountGroup.classList.remove("hidden");
+                } else {
+                    litersCountGroup.classList.add("hidden");
+                }
             }
         });
     }
