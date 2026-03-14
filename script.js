@@ -2,7 +2,7 @@
 const appData = {
     drivers: ["عمار علوان", "سالم", "ياسر عقيل", "عبدالله", "ياسر ناطق", "مصطفى", "حمودي", "عمر عقوبه", "عمر كداد", "علي محيي"],
     mandoubs: ["ابو الطيب", "عباس فاضل", "عبدالله", "ليث", "علي محسن"],
-    buses: ["هيكر ازرق", "هيكر اصفر", "سكانيا رصاصي", "جي ابيض", "ترافيكو حار سيدي", "GT طيارة", "GT وردي"],
+    buses: ["هيكر ازرق", "هيكر اخضر", "سكانيا رصاصي", "صيني ابيض", "ترافيكو مارسيدس ابيض", "GT طيارة", "GT وردي"],
     accountants: ["علي ثامر", "مهند", "رحمة", "مدقق حسابات"],
     expenseTypes: ["وقود", "حدود", "زيوت", "إطارات", "صيانة", "مصاريف مندوب"],
     busExpenseOptions: ["خيار 1", "خيار 2"],
@@ -17,6 +17,15 @@ const appData = {
 appData.buses.forEach(bus => {
     appData.busFunds[bus] = { in: 0, out: 0, trans: 0 };
 });
+
+// تحديث اليوزرات في قسم الدخول
+function populateUserSelectsForLogin() {
+    const userSelect = document.getElementById("user-name-select");
+    if(userSelect) {
+        userSelect.innerHTML = '<option value="">اختر اسمك</option>';
+        appData.users.forEach(u => userSelect.innerHTML += `<option value="${u.name}">${u.name}</option>`);
+    }
+}
 
 // تشغيل الأكواد بمجرد تحميل الصفحة
 document.addEventListener("DOMContentLoaded", () => {
@@ -37,9 +46,7 @@ function setupLoginSystem() {
     const userApp = document.getElementById("user-app");
     
     // تحديث قائمة يوزرات الدخول
-    const userSelect = document.getElementById("user-name-select");
-    userSelect.innerHTML = '<option value="">اختر اسمك</option>';
-    appData.users.forEach(u => userSelect.innerHTML += `<option value="${u.name}">${u.name}</option>`);
+    populateUserSelectsForLogin();
 
     document.getElementById("btn-login-admin").addEventListener("click", () => {
         const pass = document.getElementById("admin-pass-input").value;
@@ -76,8 +83,7 @@ function setupLoginSystem() {
             loginScreen.classList.remove("hidden");
             
             // تحديث القائمة عند الخروج لتشمل أي يوزر جديد
-            userSelect.innerHTML = '<option value="">اختر اسمك</option>';
-            appData.users.forEach(u => userSelect.innerHTML += `<option value="${u.name}">${u.name}</option>`);
+            populateUserSelectsForLogin();
         });
     });
 }
@@ -206,6 +212,7 @@ function setupSettingsSystem() {
     const renderLists = () => {
         const expList = document.getElementById("exp-types-list");
         const busOptsList = document.getElementById("bus-opts-list");
+        const usersList = document.getElementById("users-list");
         
         if(expList) {
             expList.innerHTML = appData.expenseTypes.map((t, i) => `
@@ -223,6 +230,16 @@ function setupSettingsSystem() {
                     <div>
                         <button onclick="editBusOpt(${i})" class="btn-primary" style="padding:2px 8px; font-size:12px; border:none; border-radius:4px; color:white; cursor:pointer;">تعديل</button>
                         <button onclick="delBusOpt(${i})" style="background:red; padding:2px 8px; font-size:12px; border:none; border-radius:4px; color:white; cursor:pointer;">حذف</button>
+                    </div>
+                </li>`).join('');
+        }
+
+        if(usersList) {
+            usersList.innerHTML = appData.users.map((u, i) => `
+                <li style="justify-content: space-between;">${u.name} - ${u.pass}
+                    <div>
+                        <button onclick="editUser(${i})" class="btn-primary" style="padding:2px 8px; font-size:12px; border:none; border-radius:4px; color:white; cursor:pointer;">تعديل</button>
+                        <button onclick="delUser(${i})" style="background:red; padding:2px 8px; font-size:12px; border:none; border-radius:4px; color:white; cursor:pointer;">حذف</button>
                     </div>
                 </li>`).join('');
         }
@@ -246,6 +263,8 @@ function setupSettingsSystem() {
             appData.users.push({name, pass});
             document.getElementById("new-user-name").value = "";
             document.getElementById("new-user-pass").value = "";
+            renderLists();
+            populateUserSelectsForLogin();
             alert("تم حفظ المستخدم بنجاح");
         }
     });
@@ -254,6 +273,18 @@ function setupSettingsSystem() {
     window.editExp = (i) => { const n = prompt("تعديل", appData.expenseTypes[i]); if(n) { appData.expenseTypes[i] = n; renderLists(); } };
     window.delBusOpt = (i) => { appData.busExpenseOptions.splice(i, 1); renderLists(); };
     window.editBusOpt = (i) => { const n = prompt("تعديل", appData.busExpenseOptions[i]); if(n) { appData.busExpenseOptions[i] = n; renderLists(); } };
+    
+    window.delUser = (i) => { appData.users.splice(i, 1); renderLists(); populateUserSelectsForLogin(); };
+    window.editUser = (i) => { 
+        const newName = prompt("تعديل الاسم", appData.users[i].name); 
+        const newPass = prompt("تعديل كلمة السر", appData.users[i].pass); 
+        if(newName && newPass) { 
+            appData.users[i].name = newName; 
+            appData.users[i].pass = newPass; 
+            renderLists(); 
+            populateUserSelectsForLogin(); 
+        } 
+    };
 
     renderLists();
 }
@@ -265,7 +296,7 @@ function setupTripInfoSystem() {
     window.renderTripInfos = () => {
         list.innerHTML = appData.savedTripsInfo.map((info, i) => `
             <li style="justify-content: space-between; flex-wrap: wrap;">
-                <span>معاملة ${i+1} | المورد: ${info.val15 || '-'} | الانطلاقة: ${info.val16 || '-'}</span>
+                <span>معاملة ${i+1} | المورد: ${info.val15 || '-'} | الانطلاقية: ${info.val16 || '-'}</span>
                 <div>
                     <button onclick="deleteTripInfo(${i})" style="background:red; padding:5px 10px; color:white; border:none; border-radius:4px; cursor:pointer; margin-right:5px;">حذف</button>
                 </div>
